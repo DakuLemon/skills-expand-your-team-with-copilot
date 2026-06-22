@@ -207,6 +207,36 @@ section h3 {
   justify-content: center;
 }
 
+.share-buttons {
+  margin-top: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.share-buttons .share-button,
+.share-buttons .share-link {
+  background-color: var(--background);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+  border-radius: 15px;
+  padding: 4px 10px;
+  font-size: 0.75rem;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.share-buttons .share-button:hover,
+.share-buttons .share-link:hover {
+  background-color: var(--primary-light);
+  color: white;
+  border-color: var(--primary-light);
+}
+
 /* Activity Tag */
 .activity-tag {
   position: absolute;
