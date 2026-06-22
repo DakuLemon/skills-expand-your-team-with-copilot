@@ -498,6 +498,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Format the schedule using the new helper function
     const formattedSchedule = formatSchedule(details);
+    const shareData = buildShareData(name, details, formattedSchedule);
 
     // Create activity tag
     const tagHtml = `
@@ -528,6 +529,21 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="tooltip-text">Regular meetings at this time throughout the semester</span>
       </p>
       ${capacityIndicator}
+      <div class="share-buttons" aria-label="Share this activity">
+        <button type="button" class="share-button share-copy-button">🔗 Share</button>
+        <a
+          class="share-link"
+          href="${shareData.whatsappUrl}"
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="Share ${name} on WhatsApp"
+        >
+          💬 WhatsApp
+        </a>
+        <a class="share-link" href="${shareData.emailUrl}" aria-label="Share ${name} by email">
+          ✉️ Email
+        </a>
+      </div>
       <div class="participants-list">
         <h5>Current Participants:</h5>
         <ul>
@@ -577,6 +593,11 @@ document.addEventListener("DOMContentLoaded", () => {
       button.addEventListener("click", handleUnregister);
     });
 
+    const shareCopyButton = activityCard.querySelector(".share-copy-button");
+    shareCopyButton.addEventListener("click", async () => {
+      await shareActivity(name, shareData);
+    });
+
     // Add click handler for register button (only when authenticated)
     if (currentUser) {
       const registerButton = activityCard.querySelector(".register-button");
@@ -588,6 +609,52 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     activitiesList.appendChild(activityCard);
+  }
+
+  function buildShareData(name, details, formattedSchedule) {
+    const activityUrl = `${window.location.origin}/static/index.html`;
+    const shareText = `Check out "${name}" at Mergington High School: ${details.description} (${formattedSchedule}).`;
+
+    return {
+      title: `Mergington Activity: ${name}`,
+      text: shareText,
+      url: activityUrl,
+      whatsappUrl: `https://wa.me/?text=${encodeURIComponent(
+        `${shareText} ${activityUrl}`
+      )}`,
+      emailUrl: `mailto:?subject=${encodeURIComponent(
+        `Mergington activity: ${name}`
+      )}&body=${encodeURIComponent(`${shareText}\n\n${activityUrl}`)}`,
+    };
+  }
+
+  async function shareActivity(name, shareData) {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: shareData.title,
+          text: shareData.text,
+          url: shareData.url,
+        });
+        showMessage(`"${name}" is ready to share!`, "success");
+        return;
+      } catch (error) {
+        if (error?.name === "AbortError") {
+          return;
+        }
+      }
+    }
+
+    try {
+      await navigator.clipboard.writeText(`${shareData.text} ${shareData.url}`);
+      showMessage("Share message copied! You can paste it anywhere.", "success");
+    } catch (error) {
+      showMessage(
+        "Could not copy automatically. Please use the WhatsApp or Email buttons.",
+        "error"
+      );
+      console.error("Error sharing activity:", error);
+    }
   }
 
   // Event listeners for search and filter
